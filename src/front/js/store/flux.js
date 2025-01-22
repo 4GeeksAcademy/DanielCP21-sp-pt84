@@ -13,12 +13,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			],
+			user:{
+				email: "",
+				password: ""
+			}
+			
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
-				getActions().changeColor(0, "green");
+				getActions().changeColor(0, "green")
 			},
 
 			getMessage: async () => {
@@ -46,9 +51,86 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+
+			setUser: (data) => {
+                const store = getStore();
+                setStore({ ...store, ...data });
+            },
+
+			clearUser: () => {
+                setStore({ email: "", password: "" });
+            },
+
+			register: async (email, password) => {
+				const resp = await fetch(process.env.BACKEND_URL + "/register", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email, password })
+				})
+
+				if(!resp.ok) throw Error("Hubo un problema con la petición de /register")
+
+				if(resp.status === 400){	   
+					throw("Hubo un problema con los datos enviados para el registro")   
+				}
+
+				const data = await resp.json()
+				console.log("Return register()", data)
+				return data
+			},
+
+			login: async (email, password) => {
+				const resp = await fetch(process.env.BACKEND_URL + "/login", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email, password })
+				})
+
+				if(!resp.ok) throw Error("Hubo un problema con la petición de /login")
+				
+				if(resp.status === 401){	   
+					throw("Token no válido")   
+				}			   
+				else if(resp.status === 400){			   
+					throw ("Email o contraseña incorrecto")			   
+				}	   
+
+				const data = await resp.json()
+				localStorage.setItem("token", data.token)
+				console.log("Return login()", data)
+				return data
+			},
+
+			getMyInfo: async () => {
+				const token = localStorage.getItem("token")
+				const resp = await fetch(process.env.BACKEND_URL + "/private", {
+					method: "GET",
+			        headers: { 
+						"Content-Type": "application/json",
+				        "Authorization": "Bearer " + token
+					}
+				})
+				
+			
+				if(!resp.ok) {
+					throw Error("Hubo un problema con la petición de /private")
+			   	} else if(resp.status === 401) {
+					throw Error("No se recibió ningún token")
+				} else if(resp.status === 422) {
+					throw Error("Token inválido")
+			   	}
+
+				const data = await resp.json()
+				console.log("Return getMyInfo", data)
+				return data
+			},
+
+			exit: () => {
+				localStorage.removeItem("token")
 			}
 		}
-	};
-};
+	}
+}
 
-export default getState;
+export default getState
