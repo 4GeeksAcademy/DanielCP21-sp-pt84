@@ -2,30 +2,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			],
 			user:{
 				email: "",
 				password: ""
-			}
-			
+			},
+			userInfo: null,
+			msgUserPassWrong: null
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green")
-			},
-
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
@@ -37,20 +21,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}catch(error){
 					console.log("Error loading message from backend", error)
 				}
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
-
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
-
-				//reset the global store
-				setStore({ demo: demo });
 			},
 
 			setUser: (data) => {
@@ -76,7 +46,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 
 				const data = await resp.json()
-				console.log("Return register()", data)
 				return data
 			},
 
@@ -86,20 +55,18 @@ const getState = ({ getStore, getActions, setStore }) => {
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ email, password })
 				})
-
-				if(!resp.ok) throw Error("Hubo un problema con la petición de /login")
 				
 				if(resp.status === 401){	   
-					throw("Token no válido")   
+					return resp.status 
 				}			   
 				else if(resp.status === 400){			   
-					throw ("Email o contraseña incorrecto")			   
+					return resp.status
 				}	   
 
 				const data = await resp.json()
 				localStorage.setItem("token", data.token)
-				console.log("Return login()", data)
-				return data
+				getActions().getMyInfo()
+				return resp.status
 			},
 
 			getMyInfo: async () => {
@@ -122,7 +89,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			   	}
 
 				const data = await resp.json()
-				console.log("Return getMyInfo", data)
+				getStore().userInfo = data.User
 				return data
 			},
 

@@ -105,7 +105,9 @@ def login():
         return jsonify({'msg': 'Debes enviar un body'}), 400
     
     user = User.query.filter_by(email=body['email']).first()
-    check_password = bcrypt.check_password_hash(user.password, body['password'])
+    check_password = False
+    if user:
+        check_password = bcrypt.check_password_hash(user.password, body['password'])
 
     if user is None or check_password is False:
         return jsonify({'msg': 'Usario o contraseña no validos'}), 400

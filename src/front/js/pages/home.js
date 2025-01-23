@@ -6,9 +6,6 @@ import "../../styles/home.css";
 
 export const Home = () => {
 	const { store, actions } = useContext(Context);
-	//useEffect(()=>{
-	//	actions.login()
-	//}, [])
 
 	return (
 		<div className="text-center mt-5">
