@@ -24,13 +24,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			setUser: (data) => {
-                const store = getStore();
-                setStore({ ...store, ...data });
-            },
+                		const store = getStore();
+                		setStore({ ...store, ...data });
+            		},
 
 			clearUser: () => {
-                setStore({ email: "", password: "" });
-            },
+                		setStore({ email: "", password: "" });
+            		},
 
 			register: async (email, password) => {
 				const resp = await fetch(process.env.BACKEND_URL + "/register", {
